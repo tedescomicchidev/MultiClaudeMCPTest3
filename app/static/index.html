@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parallel Agent Scheduler</title>
+    <style>
+        :root {
+            --bg: #0f1117;
+            --surface: #1a1d27;
+            --surface2: #242736;
+            --border: #2e3144;
+            --text: #e1e4ed;
+            --text-dim: #8b8fa3;
+            --accent: #6c63ff;
+            --accent-glow: rgba(108, 99, 255, 0.15);
+            --green: #34d399;
+            --red: #f87171;
+            --yellow: #fbbf24;
+            --blue: #60a5fa;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.3rem;
+        }
+
+        header p {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .architecture-note {
+            background: var(--accent-glow);
+            border: 1px solid var(--accent);
+            border-radius: 6px;
+            padding: 0.8rem 1rem;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            margin-bottom: 2rem;
+            line-height: 1.5;
+        }
+
+        .architecture-note strong {
+            color: var(--accent);
+        }
+
+        /* ── Form ─────────────────────────────────────────── */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-card label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 0.4rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .form-card textarea {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.8rem;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            resize: vertical;
+            min-height: 100px;
+            margin-bottom: 1rem;
+        }
+
+        .form-card textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        .form-row {
+            display: flex;
+            align-items: flex-end;
+            gap: 1rem;
+        }
+
+        .form-row .field { flex: 0 0 auto; }
+        .form-row .field-grow { flex: 1; }
+
+        .form-card input[type="number"] {
+            width: 80px;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 0.6rem 0.8rem;
+            color: var(--text);
+            font-family: inherit;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        .form-card input[type="number"]:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 6px;
+            padding: 0.65rem 1.5rem;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .btn:hover { opacity: 0.85; }
+        .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+        /* ── Swarm Display ────────────────────────────────── */
+        #swarm-panel {
+            display: none;
+        }
+
+        .panel-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .panel-header h2 {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .status-badge {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.7rem;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .status-initializing { background: var(--surface2); color: var(--text-dim); }
+        .status-decomposing  { background: rgba(251, 191, 36, 0.15); color: var(--yellow); }
+        .status-running      { background: rgba(96, 165, 250, 0.15); color: var(--blue); }
+        .status-synthesizing { background: rgba(108, 99, 255, 0.15); color: var(--accent); }
+        .status-completed    { background: rgba(52, 211, 153, 0.15); color: var(--green); }
+        .status-failed       { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+
+        /* ── Progress Bar ─────────────────────────────────── */
+        .progress-container {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 8px;
+            background: var(--surface2);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 0.6rem;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--accent);
+            border-radius: 4px;
+            transition: width 0.4s ease;
+            width: 0%;
+        }
+
+        .progress-stats {
+            display: flex;
+            gap: 1.5rem;
+            font-size: 0.78rem;
+            color: var(--text-dim);
+        }
+
+        .progress-stats span strong {
+            color: var(--text);
+        }
+
+        /* ── Task Cards ───────────────────────────────────── */
+        .tasks-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .task-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        .task-card.running {
+            border-color: var(--blue);
+            box-shadow: 0 0 12px rgba(96, 165, 250, 0.08);
+        }
+
+        .task-card.completed {
+            border-color: var(--green);
+        }
+
+        .task-card.failed {
+            border-color: var(--red);
+        }
+
+        .task-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+
+        .task-card-header .agent-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            background: var(--surface2);
+            padding: 0.15rem 0.5rem;
+            border-radius: 3px;
+        }
+
+        .task-card h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+            line-height: 1.3;
+        }
+
+        .task-card .description {
+            font-size: 0.78rem;
+            color: var(--text-dim);
+            margin-bottom: 0.6rem;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .task-card .result {
+            background: var(--surface2);
+            border-radius: 4px;
+            padding: 0.6rem;
+            font-size: 0.75rem;
+            max-height: 200px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .dot-pulse {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            background: var(--blue);
+            border-radius: 50%;
+            animation: pulse 1.2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        /* ── Synthesis ────────────────────────────────────── */
+        .synthesis-card {
+            background: var(--surface);
+            border: 1px solid var(--green);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .synthesis-card h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--green);
+            margin-bottom: 0.8rem;
+        }
+
+        .synthesis-card .content {
+            font-size: 0.82rem;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        /* ── Event Log ────────────────────────────────────── */
+        .event-log {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        .event-log h3 {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .event-log .entry {
+            font-size: 0.72rem;
+            color: var(--text-dim);
+            padding: 0.2rem 0;
+            border-bottom: 1px solid var(--surface2);
+        }
+
+        .event-log .entry:last-child { border-bottom: none; }
+        .event-log .entry .time { color: var(--accent); margin-right: 0.5rem; }
+        .event-log .entry .type { color: var(--yellow); margin-right: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Parallel Agent Scheduler</h1>
+            <p>Meta-Agent Orchestrator &mdash; Claude Agent Swarm Demo</p>
+        </header>
+
+        <div class="architecture-note">
+            <strong>Architecture:</strong> Based on the production blueprint from
+            "Running Claude Code in Kubernetes". An <strong>uber-agent</strong>
+            (Meta-Agent) decomposes your idea into independent subtasks, then
+            dispatches them to a swarm of <strong>parallel worker agents</strong>
+            for concurrent execution. Results are synthesized back by the uber-agent.
+        </div>
+
+        <!-- ── Input Form ─────────────────────────────────── -->
+        <div class="form-card">
+            <label for="idea">Your Idea / Task</label>
+            <textarea id="idea" placeholder="Describe what you want the agent swarm to work on...&#10;&#10;Example: Build a REST API for a todo app with user authentication, database models, API endpoints, tests, and deployment configuration."></textarea>
+            <div class="form-row">
+                <div class="field">
+                    <label for="num-agents">Parallel Agents</label>
+                    <input type="number" id="num-agents" value="3" min="1" max="20">
+                </div>
+                <div class="field">
+                    <button class="btn" id="launch-btn" onclick="launchSwarm()">
+                        Launch Swarm
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Swarm Panel ────────────────────────────────── -->
+        <div id="swarm-panel">
+            <div class="panel-header">
+                <h2>Swarm <span id="swarm-id"></span></h2>
+                <span id="swarm-status" class="status-badge status-initializing">initializing</span>
+            </div>
+
+            <div class="progress-container">
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="progress-fill"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>Total: <strong id="stat-total">0</strong></span>
+                    <span>Running: <strong id="stat-running">0</strong></span>
+                    <span>Completed: <strong id="stat-completed">0</strong></span>
+                    <span>Failed: <strong id="stat-failed">0</strong></span>
+                </div>
+            </div>
+
+            <div class="tasks-grid" id="tasks-grid"></div>
+
+            <div id="synthesis-container"></div>
+
+            <div class="event-log" id="event-log">
+                <h3>Event Stream</h3>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentSwarmId = null;
+        let eventSource = null;
+
+        async function launchSwarm() {
+            const idea = document.getElementById('idea').value.trim();
+            const numAgents = parseInt(document.getElementById('num-agents').value, 10);
+
+            if (!idea) {
+                alert('Please describe your idea.');
+                return;
+            }
+
+            const btn = document.getElementById('launch-btn');
+            btn.disabled = true;
+            btn.textContent = 'Launching...';
+
+            try {
+                const res = await fetch('/api/swarms', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idea, num_agents: numAgents }),
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Failed to create swarm');
+                }
+
+                const data = await res.json();
+                currentSwarmId = data.swarm_id;
+
+                // Reset UI
+                document.getElementById('swarm-panel').style.display = 'block';
+                document.getElementById('swarm-id').textContent = currentSwarmId;
+                document.getElementById('tasks-grid').innerHTML = '';
+                document.getElementById('synthesis-container').innerHTML = '';
+                document.getElementById('event-log').innerHTML = '<h3>Event Stream</h3>';
+                updateStatus('initializing');
+                updateProgress({ total: 0, completed: 0, failed: 0, running: 0 });
+
+                // Connect SSE
+                connectSSE(currentSwarmId);
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Launch Swarm';
+            }
+        }
+
+        function connectSSE(swarmId) {
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            eventSource = new EventSource(`/api/swarms/${swarmId}/stream`);
+
+            eventSource.addEventListener('status', (e) => {
+                const d = JSON.parse(e.data);
+                updateStatus(d.status);
+                logEvent('status', d.message);
+            });
+
+            eventSource.addEventListener('decomposition_complete', (e) => {
+                const d = JSON.parse(e.data);
+                renderTasks(d.subtasks);
+                updateProgress({ total: d.subtasks.length, completed: 0, failed: 0, running: 0, pending: d.subtasks.length });
+                logEvent('decomposition', `Decomposed into ${d.subtasks.length} subtasks`);
+            });
+
+            eventSource.addEventListener('worker_started', (e) => {
+                const d = JSON.parse(e.data);
+                updateTaskCard(d.task_id, 'running', d.worker_id);
+                logEvent('worker', `${d.worker_id} started: ${d.title}`);
+            });
+
+            eventSource.addEventListener('worker_completed', (e) => {
+                const d = JSON.parse(e.data);
+                updateTaskCard(d.task_id, 'completed', d.worker_id, d.result);
+                if (d.progress) updateProgress(d.progress);
+                logEvent('worker', `${d.worker_id} completed: ${d.title}`);
+            });
+
+            eventSource.addEventListener('worker_failed', (e) => {
+                const d = JSON.parse(e.data);
+                updateTaskCard(d.task_id, 'failed', d.worker_id, null, d.error);
+                logEvent('error', `${d.worker_id} failed: ${d.error}`);
+            });
+
+            eventSource.addEventListener('completed', (e) => {
+                const d = JSON.parse(e.data);
+                updateStatus('completed');
+                if (d.progress) updateProgress(d.progress);
+                if (d.synthesis) renderSynthesis(d.synthesis);
+                logEvent('complete', 'Swarm completed successfully');
+            });
+
+            eventSource.addEventListener('error', (e) => {
+                try {
+                    const d = JSON.parse(e.data);
+                    updateStatus('failed');
+                    logEvent('error', d.error || 'Unknown error');
+                } catch {
+                    // SSE connection error
+                }
+            });
+
+            eventSource.addEventListener('done', () => {
+                eventSource.close();
+            });
+
+            eventSource.onerror = () => {
+                // SSE auto-reconnects; we close on 'done'
+            };
+        }
+
+        function updateStatus(status) {
+            const el = document.getElementById('swarm-status');
+            el.textContent = status;
+            el.className = 'status-badge status-' + status;
+        }
+
+        function updateProgress(p) {
+            document.getElementById('stat-total').textContent = p.total;
+            document.getElementById('stat-running').textContent = p.running;
+            document.getElementById('stat-completed').textContent = p.completed;
+            document.getElementById('stat-failed').textContent = p.failed;
+
+            const pct = p.total > 0 ? ((p.completed + p.failed) / p.total * 100) : 0;
+            document.getElementById('progress-fill').style.width = pct + '%';
+        }
+
+        function renderTasks(subtasks) {
+            const grid = document.getElementById('tasks-grid');
+            grid.innerHTML = '';
+            subtasks.forEach((t) => {
+                const card = document.createElement('div');
+                card.className = 'task-card';
+                card.id = 'task-' + t.id;
+                card.innerHTML = `
+                    <div class="task-card-header">
+                        <span class="status-badge status-initializing">pending</span>
+                        <span class="agent-label" id="agent-${t.id}">--</span>
+                    </div>
+                    <h3>${esc(t.title)}</h3>
+                    <div class="description">${esc(t.description)}</div>
+                    <div class="result" id="result-${t.id}" style="display:none;"></div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function updateTaskCard(taskId, status, workerId, result, error) {
+            const card = document.getElementById('task-' + taskId);
+            if (!card) return;
+
+            card.className = 'task-card ' + status;
+            const badge = card.querySelector('.status-badge');
+            if (status === 'running') {
+                badge.className = 'status-badge status-running';
+                badge.innerHTML = '<span class="dot-pulse"></span> running';
+            } else if (status === 'completed') {
+                badge.className = 'status-badge status-completed';
+                badge.textContent = 'completed';
+            } else if (status === 'failed') {
+                badge.className = 'status-badge status-failed';
+                badge.textContent = 'failed';
+            }
+
+            const agentEl = document.getElementById('agent-' + taskId);
+            if (agentEl && workerId) agentEl.textContent = workerId;
+
+            if (result || error) {
+                const resEl = document.getElementById('result-' + taskId);
+                if (resEl) {
+                    resEl.style.display = 'block';
+                    resEl.textContent = result || ('ERROR: ' + error);
+                }
+            }
+        }
+
+        function renderSynthesis(text) {
+            const container = document.getElementById('synthesis-container');
+            container.innerHTML = `
+                <div class="synthesis-card">
+                    <h3>Uber-Agent Synthesis</h3>
+                    <div class="content">${esc(text)}</div>
+                </div>
+            `;
+        }
+
+        function logEvent(type, message) {
+            const log = document.getElementById('event-log');
+            const now = new Date().toLocaleTimeString();
+            const entry = document.createElement('div');
+            entry.className = 'entry';
+            entry.innerHTML = `<span class="time">${now}</span><span class="type">[${type}]</span>${esc(message)}`;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+
+        function esc(str) {
+            const d = document.createElement('div');
+            d.textContent = str || '';
+            return d.innerHTML;
+        }
+    </script>
+</body>
+</html>
