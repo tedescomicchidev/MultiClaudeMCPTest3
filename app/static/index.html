@@ -18,6 +18,9 @@
             --red: #f87171;
             --yellow: #fbbf24;
             --blue: #60a5fa;
+            --orange: #fb923c;
+            --pink: #f472b6;
+            --cyan: #22d3ee;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -70,6 +73,33 @@
             color: var(--accent);
         }
 
+        /* ── Mode Tabs ───────────────────────────────────── */
+        .mode-tabs {
+            display: flex;
+            gap: 0;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 0.8rem 1rem;
+            text-align: center;
+            font-family: inherit;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            background: var(--surface);
+            color: var(--text-dim);
+            border: none;
+            transition: all 0.15s;
+        }
+
+        .mode-tab:hover { background: var(--surface2); color: var(--text); }
+        .mode-tab.active { background: var(--accent); color: #fff; }
+
         /* ── Form ─────────────────────────────────────────── */
         .form-card {
             background: var(--surface);
@@ -112,6 +142,7 @@
             display: flex;
             align-items: flex-end;
             gap: 1rem;
+            flex-wrap: wrap;
         }
 
         .form-row .field { flex: 0 0 auto; }
@@ -134,6 +165,26 @@
             border-color: var(--accent);
         }
 
+        .checkbox-field {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.6rem 0;
+        }
+
+        .checkbox-field input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent);
+        }
+
+        .checkbox-field label {
+            margin: 0;
+            text-transform: none;
+            font-size: 0.82rem;
+            color: var(--text);
+        }
+
         .btn {
             background: var(--accent);
             color: #fff;
@@ -150,8 +201,12 @@
         .btn:hover { opacity: 0.85; }
         .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
-        /* ── Swarm Display ────────────────────────────────── */
-        #swarm-panel {
+        .btn-team {
+            background: var(--cyan);
+        }
+
+        /* ── Panels ──────────────────────────────────────── */
+        #swarm-panel, #team-panel {
             display: none;
         }
 
@@ -182,6 +237,8 @@
         .status-synthesizing { background: rgba(108, 99, 255, 0.15); color: var(--accent); }
         .status-completed    { background: rgba(52, 211, 153, 0.15); color: var(--green); }
         .status-failed       { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+        .status-reviewing    { background: rgba(251, 146, 60, 0.15); color: var(--orange); }
+        .status-validating   { background: rgba(34, 211, 238, 0.15); color: var(--cyan); }
 
         /* ── Progress Bar ─────────────────────────────────── */
         .progress-container {
@@ -218,6 +275,84 @@
 
         .progress-stats span strong {
             color: var(--text);
+        }
+
+        /* ── Agent Cards (Team mode) ─────────────────────── */
+        .agents-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .agent-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.8rem;
+        }
+
+        .agent-card .role-badge {
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            padding: 0.15rem 0.5rem;
+            border-radius: 3px;
+            display: inline-block;
+            margin-bottom: 0.4rem;
+        }
+
+        .role-lead      { background: rgba(108,99,255,0.2); color: var(--accent); }
+        .role-planner    { background: rgba(251,191,36,0.2); color: var(--yellow); }
+        .role-architect  { background: rgba(96,165,250,0.2); color: var(--blue); }
+        .role-devils_advocate { background: rgba(248,113,113,0.2); color: var(--red); }
+        .role-k8s_expert { background: rgba(34,211,238,0.2); color: var(--cyan); }
+        .role-worker     { background: rgba(52,211,153,0.2); color: var(--green); }
+
+        .agent-card .pod-name {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            word-break: break-all;
+        }
+
+        /* ── Plan Card ───────────────────────────────────── */
+        .plan-card {
+            background: var(--surface);
+            border: 1px solid var(--yellow);
+            border-radius: 8px;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .plan-card h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--yellow);
+            margin-bottom: 0.5rem;
+        }
+
+        .plan-card .plan-desc {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            margin-bottom: 0.8rem;
+            line-height: 1.5;
+        }
+
+        .plan-card .plan-status {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* ── Delegate Mode Indicator ─────────────────────── */
+        .delegate-badge {
+            font-size: 0.7rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 3px;
+            background: rgba(108, 99, 255, 0.2);
+            color: var(--accent);
+            font-weight: 600;
+            letter-spacing: 0.04em;
         }
 
         /* ── Task Cards ───────────────────────────────────── */
@@ -364,19 +499,27 @@
     <div class="container">
         <header>
             <h1>Parallel Agent Scheduler</h1>
-            <p>Meta-Agent Orchestrator &mdash; Claude Agent Swarm Demo</p>
+            <p>Kubernetes Pod-Based Agent Orchestration &mdash; Claude Agent Team Demo</p>
         </header>
 
         <div class="architecture-note">
-            <strong>Architecture:</strong> Based on the production blueprint from
-            "Running Claude Code in Kubernetes". An <strong>uber-agent</strong>
-            (Meta-Agent) decomposes your idea into independent subtasks, then
-            dispatches them to a swarm of <strong>parallel worker agents</strong>
-            for concurrent execution. Results are synthesized back by the uber-agent.
+            <strong>Architecture:</strong> Agents run as isolated <strong>Kubernetes pods</strong>
+            instead of tmux sessions. In <strong>Swarm Mode</strong>, an uber-agent decomposes
+            your idea and spawns parallel worker pods. In <strong>Team Mode</strong>, a
+            <strong>delegate-mode lead</strong> coordinates role-specialized agents (architect,
+            K8s expert, devil's advocate, planner) &mdash; each running in their own pod.
+            The lead is restricted to coordination-only actions: spawning, messaging,
+            shutting down agents, and managing tasks.
         </div>
 
-        <!-- ── Input Form ─────────────────────────────────── -->
-        <div class="form-card">
+        <!-- ── Mode Tabs ─────────────────────────────────── -->
+        <div class="mode-tabs">
+            <button class="mode-tab active" onclick="switchMode('swarm')">Swarm Mode</button>
+            <button class="mode-tab" onclick="switchMode('team')">Team Mode</button>
+        </div>
+
+        <!-- ── Swarm Form ────────────────────────────────── -->
+        <div class="form-card" id="swarm-form">
             <label for="idea">Your Idea / Task</label>
             <textarea id="idea" placeholder="Describe what you want the agent swarm to work on...&#10;&#10;Example: Build a REST API for a todo app with user authentication, database models, API endpoints, tests, and deployment configuration."></textarea>
             <div class="form-row">
@@ -387,6 +530,23 @@
                 <div class="field">
                     <button class="btn" id="launch-btn" onclick="launchSwarm()">
                         Launch Swarm
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Team Form ─────────────────────────────────── -->
+        <div class="form-card" id="team-form" style="display:none;">
+            <label for="team-idea">Your Idea / Task</label>
+            <textarea id="team-idea" placeholder="Describe the project for your agent team...&#10;&#10;The team lead (delegate mode) will coordinate:&#10;- Planner: creates implementation plan&#10;- Architect: reviews system design&#10;- Devil's Advocate: challenges assumptions&#10;- K8s Expert: validates deployment&#10;- Workers: implement approved tasks"></textarea>
+            <div class="form-row">
+                <div class="checkbox-field">
+                    <input type="checkbox" id="delegate-mode" checked>
+                    <label for="delegate-mode">Delegate Mode (lead = coordination only)</label>
+                </div>
+                <div class="field">
+                    <button class="btn btn-team" id="launch-team-btn" onclick="launchTeam()">
+                        Launch Team
                     </button>
                 </div>
             </div>
@@ -419,11 +579,62 @@
                 <h3>Event Stream</h3>
             </div>
         </div>
+
+        <!-- ── Team Panel ─────────────────────────────────── -->
+        <div id="team-panel">
+            <div class="panel-header">
+                <h2>Team <span id="team-id"></span></h2>
+                <div>
+                    <span class="delegate-badge" id="delegate-badge">DELEGATE MODE</span>
+                    <span id="team-status" class="status-badge status-initializing">initializing</span>
+                </div>
+            </div>
+
+            <div id="team-agents-container">
+                <h3 style="font-size:0.8rem; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:0.6rem;">Agent Pods</h3>
+                <div class="agents-grid" id="agents-grid"></div>
+            </div>
+
+            <div id="team-plan-container"></div>
+
+            <div class="progress-container" id="team-progress">
+                <div class="progress-bar-track">
+                    <div class="progress-bar-fill" id="team-progress-fill"></div>
+                </div>
+                <div class="progress-stats">
+                    <span>Total: <strong id="team-stat-total">0</strong></span>
+                    <span>Running: <strong id="team-stat-running">0</strong></span>
+                    <span>Completed: <strong id="team-stat-completed">0</strong></span>
+                    <span>Failed: <strong id="team-stat-failed">0</strong></span>
+                </div>
+            </div>
+
+            <div class="tasks-grid" id="team-tasks-grid"></div>
+
+            <div id="team-synthesis-container"></div>
+
+            <div class="event-log" id="team-event-log">
+                <h3>Team Event Stream</h3>
+            </div>
+        </div>
     </div>
 
     <script>
         let currentSwarmId = null;
+        let currentTeamId = null;
         let eventSource = null;
+        let currentMode = 'swarm';
+
+        function switchMode(mode) {
+            currentMode = mode;
+            document.querySelectorAll('.mode-tab').forEach((tab, i) => {
+                tab.classList.toggle('active', (i === 0 && mode === 'swarm') || (i === 1 && mode === 'team'));
+            });
+            document.getElementById('swarm-form').style.display = mode === 'swarm' ? 'block' : 'none';
+            document.getElementById('team-form').style.display = mode === 'team' ? 'block' : 'none';
+        }
+
+        // ── Swarm Mode ─────────────────────────────────────
 
         async function launchSwarm() {
             const idea = document.getElementById('idea').value.trim();
@@ -453,8 +664,8 @@
                 const data = await res.json();
                 currentSwarmId = data.swarm_id;
 
-                // Reset UI
                 document.getElementById('swarm-panel').style.display = 'block';
+                document.getElementById('team-panel').style.display = 'none';
                 document.getElementById('swarm-id').textContent = currentSwarmId;
                 document.getElementById('tasks-grid').innerHTML = '';
                 document.getElementById('synthesis-container').innerHTML = '';
@@ -462,8 +673,7 @@
                 updateStatus('initializing');
                 updateProgress({ total: 0, completed: 0, failed: 0, running: 0 });
 
-                // Connect SSE
-                connectSSE(currentSwarmId);
+                connectSwarmSSE(currentSwarmId);
             } catch (err) {
                 alert('Error: ' + err.message);
             } finally {
@@ -472,70 +682,60 @@
             }
         }
 
-        function connectSSE(swarmId) {
-            if (eventSource) {
-                eventSource.close();
-            }
-
+        function connectSwarmSSE(swarmId) {
+            if (eventSource) eventSource.close();
             eventSource = new EventSource(`/api/swarms/${swarmId}/stream`);
 
             eventSource.addEventListener('status', (e) => {
                 const d = JSON.parse(e.data);
                 updateStatus(d.status);
-                logEvent('status', d.message);
+                logEvent('event-log', 'status', d.message);
             });
 
             eventSource.addEventListener('decomposition_complete', (e) => {
                 const d = JSON.parse(e.data);
-                renderTasks(d.subtasks);
+                renderTasks('tasks-grid', d.subtasks);
                 updateProgress({ total: d.subtasks.length, completed: 0, failed: 0, running: 0, pending: d.subtasks.length });
-                logEvent('decomposition', `Decomposed into ${d.subtasks.length} subtasks`);
+                logEvent('event-log', 'decomposition', `Decomposed into ${d.subtasks.length} subtasks`);
             });
 
             eventSource.addEventListener('worker_started', (e) => {
                 const d = JSON.parse(e.data);
                 updateTaskCard(d.task_id, 'running', d.worker_id);
-                logEvent('worker', `${d.worker_id} started: ${d.title}`);
+                logEvent('event-log', 'pod', `Pod spawned: ${d.worker_id} -> ${d.title}`);
             });
 
             eventSource.addEventListener('worker_completed', (e) => {
                 const d = JSON.parse(e.data);
                 updateTaskCard(d.task_id, 'completed', d.worker_id, d.result);
                 if (d.progress) updateProgress(d.progress);
-                logEvent('worker', `${d.worker_id} completed: ${d.title}`);
+                logEvent('event-log', 'pod', `Pod completed: ${d.worker_id} -> ${d.title}`);
             });
 
             eventSource.addEventListener('worker_failed', (e) => {
                 const d = JSON.parse(e.data);
                 updateTaskCard(d.task_id, 'failed', d.worker_id, null, d.error);
-                logEvent('error', `${d.worker_id} failed: ${d.error}`);
+                logEvent('event-log', 'error', `Pod failed: ${d.worker_id} -> ${d.error}`);
             });
 
             eventSource.addEventListener('completed', (e) => {
                 const d = JSON.parse(e.data);
                 updateStatus('completed');
                 if (d.progress) updateProgress(d.progress);
-                if (d.synthesis) renderSynthesis(d.synthesis);
-                logEvent('complete', 'Swarm completed successfully');
+                if (d.synthesis) renderSynthesis('synthesis-container', d.synthesis);
+                logEvent('event-log', 'complete', 'Swarm completed successfully');
             });
 
             eventSource.addEventListener('error', (e) => {
                 try {
                     const d = JSON.parse(e.data);
                     updateStatus('failed');
-                    logEvent('error', d.error || 'Unknown error');
-                } catch {
-                    // SSE connection error
-                }
+                    logEvent('event-log', 'error', d.error || 'Unknown error');
+                } catch {}
             });
 
-            eventSource.addEventListener('done', () => {
-                eventSource.close();
-            });
-
-            eventSource.onerror = () => {
-                // SSE auto-reconnects; we close on 'done'
-            };
+            eventSource.addEventListener('done', () => { eventSource.close(); });
+            eventSource.onerror = () => {};
         }
 
         function updateStatus(status) {
@@ -554,8 +754,224 @@
             document.getElementById('progress-fill').style.width = pct + '%';
         }
 
-        function renderTasks(subtasks) {
-            const grid = document.getElementById('tasks-grid');
+        // ── Team Mode ──────────────────────────────────────
+
+        async function launchTeam() {
+            const idea = document.getElementById('team-idea').value.trim();
+            const delegateMode = document.getElementById('delegate-mode').checked;
+
+            if (!idea) {
+                alert('Please describe your project idea.');
+                return;
+            }
+
+            const btn = document.getElementById('launch-team-btn');
+            btn.disabled = true;
+            btn.textContent = 'Launching...';
+
+            try {
+                const res = await fetch('/api/teams', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ idea, delegate_mode: delegateMode }),
+                });
+
+                if (!res.ok) {
+                    const err = await res.json();
+                    throw new Error(err.detail || 'Failed to create team');
+                }
+
+                const data = await res.json();
+                currentTeamId = data.team_id;
+
+                document.getElementById('team-panel').style.display = 'block';
+                document.getElementById('swarm-panel').style.display = 'none';
+                document.getElementById('team-id').textContent = currentTeamId;
+                document.getElementById('agents-grid').innerHTML = '';
+                document.getElementById('team-plan-container').innerHTML = '';
+                document.getElementById('team-tasks-grid').innerHTML = '';
+                document.getElementById('team-synthesis-container').innerHTML = '';
+                document.getElementById('team-event-log').innerHTML = '<h3>Team Event Stream</h3>';
+                document.getElementById('delegate-badge').style.display = delegateMode ? 'inline' : 'none';
+                updateTeamStatus('initializing');
+                updateTeamProgress({ total: 0, completed: 0, failed: 0, running: 0 });
+
+                connectTeamSSE(currentTeamId);
+            } catch (err) {
+                alert('Error: ' + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Launch Team';
+            }
+        }
+
+        function connectTeamSSE(teamId) {
+            if (eventSource) eventSource.close();
+            eventSource = new EventSource(`/api/teams/${teamId}/stream`);
+
+            eventSource.addEventListener('status', (e) => {
+                const d = JSON.parse(e.data);
+                updateTeamStatus(d.status);
+                logEvent('team-event-log', 'status', d.message);
+            });
+
+            eventSource.addEventListener('agent_spawned', (e) => {
+                const d = JSON.parse(e.data);
+                addAgentCard(d.agent_id, d.role, d.pod_name, d.status);
+                logEvent('team-event-log', 'pod', `Spawned ${d.role} pod: ${d.pod_name}`);
+            });
+
+            eventSource.addEventListener('agent_shutdown', (e) => {
+                const d = JSON.parse(e.data);
+                updateAgentCard(d.agent_id, 'terminated');
+                logEvent('team-event-log', 'pod', `Shutdown ${d.role} pod: ${d.pod_name}`);
+            });
+
+            eventSource.addEventListener('agent_message', (e) => {
+                const d = JSON.parse(e.data);
+                logEvent('team-event-log', 'msg', `${d.sender} -> ${d.role}: ${d.message.substring(0, 100)}...`);
+            });
+
+            eventSource.addEventListener('plan_created', (e) => {
+                const d = JSON.parse(e.data);
+                renderPlan(d);
+                logEvent('team-event-log', 'plan', `Plan created: ${d.title}`);
+            });
+
+            eventSource.addEventListener('plan_pending_approval', (e) => {
+                const d = JSON.parse(e.data);
+                logEvent('team-event-log', 'plan', `Plan pending lead approval: ${d.title}`);
+            });
+
+            eventSource.addEventListener('plan_approved', (e) => {
+                const d = JSON.parse(e.data);
+                updatePlanStatus('approved');
+                logEvent('team-event-log', 'plan', `Plan approved: ${d.title}`);
+            });
+
+            eventSource.addEventListener('plan_rejected', (e) => {
+                const d = JSON.parse(e.data);
+                updatePlanStatus('rejected');
+                logEvent('team-event-log', 'plan', `Plan rejected: ${d.feedback}`);
+            });
+
+            eventSource.addEventListener('decomposition_complete', (e) => {
+                const d = JSON.parse(e.data);
+                renderTasks('team-tasks-grid', d.subtasks);
+                updateTeamProgress({ total: d.subtasks.length, completed: 0, failed: 0, running: 0, pending: d.subtasks.length });
+                logEvent('team-event-log', 'tasks', `${d.subtasks.length} implementation tasks created`);
+            });
+
+            eventSource.addEventListener('worker_started', (e) => {
+                const d = JSON.parse(e.data);
+                updateTaskCard(d.task_id, 'running', d.worker_id);
+                logEvent('team-event-log', 'pod', `Worker pod started: ${d.worker_id}`);
+            });
+
+            eventSource.addEventListener('worker_completed', (e) => {
+                const d = JSON.parse(e.data);
+                updateTaskCard(d.task_id, 'completed', d.worker_id, d.result);
+                if (d.progress) updateTeamProgress(d.progress);
+                logEvent('team-event-log', 'pod', `Worker pod completed: ${d.worker_id}`);
+            });
+
+            eventSource.addEventListener('worker_failed', (e) => {
+                const d = JSON.parse(e.data);
+                updateTaskCard(d.task_id, 'failed', d.worker_id, null, d.error);
+                logEvent('team-event-log', 'error', `Worker pod failed: ${d.error}`);
+            });
+
+            eventSource.addEventListener('completed', (e) => {
+                const d = JSON.parse(e.data);
+                updateTeamStatus('completed');
+                if (d.progress) updateTeamProgress(d.progress);
+                if (d.synthesis) renderSynthesis('team-synthesis-container', d.synthesis);
+                logEvent('team-event-log', 'complete', 'Team completed successfully');
+            });
+
+            eventSource.addEventListener('error', (e) => {
+                try {
+                    const d = JSON.parse(e.data);
+                    updateTeamStatus('failed');
+                    logEvent('team-event-log', 'error', d.error || 'Unknown error');
+                } catch {}
+            });
+
+            eventSource.addEventListener('done', () => { eventSource.close(); });
+            eventSource.onerror = () => {};
+        }
+
+        function updateTeamStatus(status) {
+            const el = document.getElementById('team-status');
+            el.textContent = status;
+            el.className = 'status-badge status-' + status;
+        }
+
+        function updateTeamProgress(p) {
+            document.getElementById('team-stat-total').textContent = p.total;
+            document.getElementById('team-stat-running').textContent = p.running;
+            document.getElementById('team-stat-completed').textContent = p.completed;
+            document.getElementById('team-stat-failed').textContent = p.failed;
+
+            const pct = p.total > 0 ? ((p.completed + p.failed) / p.total * 100) : 0;
+            document.getElementById('team-progress-fill').style.width = pct + '%';
+        }
+
+        function addAgentCard(agentId, role, podName, status) {
+            const grid = document.getElementById('agents-grid');
+            const card = document.createElement('div');
+            card.className = 'agent-card';
+            card.id = 'agent-' + agentId;
+            card.innerHTML = `
+                <span class="role-badge role-${role}">${role.replace('_', ' ')}</span>
+                <span class="status-badge status-${status === 'running' ? 'running' : 'initializing'}" id="agent-status-${agentId}" style="font-size:0.65rem;">${status}</span>
+                <div class="pod-name">${esc(podName || 'pending...')}</div>
+            `;
+            grid.appendChild(card);
+        }
+
+        function updateAgentCard(agentId, status) {
+            const el = document.getElementById('agent-status-' + agentId);
+            if (el) {
+                el.textContent = status;
+                el.className = 'status-badge status-' + (status === 'terminated' ? 'failed' : status);
+            }
+        }
+
+        function renderPlan(planData) {
+            const container = document.getElementById('team-plan-container');
+            let phasesHtml = '';
+            if (planData.phases && planData.phases.length > 0) {
+                phasesHtml = '<div style="margin-top:0.5rem;font-size:0.75rem;">';
+                planData.phases.forEach((phase, i) => {
+                    const name = phase.name || `Phase ${i+1}`;
+                    phasesHtml += `<div style="margin-bottom:0.3rem;"><strong style="color:var(--accent);">${esc(name)}</strong></div>`;
+                });
+                phasesHtml += '</div>';
+            }
+            container.innerHTML = `
+                <div class="plan-card">
+                    <h3>Implementation Plan</h3>
+                    <div class="plan-desc">${esc(planData.description || planData.title)}</div>
+                    ${phasesHtml}
+                    <div class="plan-status" id="plan-status" style="color:var(--yellow);">Status: ${planData.status || 'draft'}</div>
+                </div>
+            `;
+        }
+
+        function updatePlanStatus(status) {
+            const el = document.getElementById('plan-status');
+            if (el) {
+                const colors = { approved: 'var(--green)', rejected: 'var(--red)', pending_approval: 'var(--yellow)' };
+                el.style.color = colors[status] || 'var(--text-dim)';
+                el.textContent = `Status: ${status}`;
+            }
+        }
+
+        // ── Shared Helpers ─────────────────────────────────
+
+        function renderTasks(gridId, subtasks) {
+            const grid = document.getElementById(gridId);
             grid.innerHTML = '';
             subtasks.forEach((t) => {
                 const card = document.createElement('div');
@@ -603,18 +1019,18 @@
             }
         }
 
-        function renderSynthesis(text) {
-            const container = document.getElementById('synthesis-container');
+        function renderSynthesis(containerId, text) {
+            const container = document.getElementById(containerId);
             container.innerHTML = `
                 <div class="synthesis-card">
-                    <h3>Uber-Agent Synthesis</h3>
+                    <h3>Lead Synthesis</h3>
                     <div class="content">${esc(text)}</div>
                 </div>
             `;
         }
 
-        function logEvent(type, message) {
-            const log = document.getElementById('event-log');
+        function logEvent(logId, type, message) {
+            const log = document.getElementById(logId);
             const now = new Date().toLocaleTimeString();
             const entry = document.createElement('div');
             entry.className = 'entry';

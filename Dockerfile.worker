@@ -1,0 +1,40 @@
+# Worker Agent Pod Image
+#
+# Runs a single agent task inside a Kubernetes pod. Each worker:
+# 1. Reads its subtask from environment variables
+# 2. Calls the Claude API with a role-specific system prompt
+# 3. POSTs the result back to the orchestrator's callback endpoint
+# 4. Exits (pod completes with success or failure code)
+#
+# Build:
+#   docker build -t parallel-agent-worker:latest -f Dockerfile.worker .
+#
+# The pod is created by K8sPodManager with these env vars:
+#   TASK_ID, TASK_TITLE, TASK_DESCRIPTION, SWARM_ID, WORKER_ID,
+#   AGENT_ROLE, SYSTEM_PROMPT, CALLBACK_URL, ANTHROPIC_API_KEY,
+#   CLAUDE_MODEL
+
+FROM python:3.12-alpine
+
+# Runtime dependencies
+RUN apk add --no-cache tini
+
+# Non-root user (as per the blueprint's security requirements)
+RUN adduser -D -h /app agent
+WORKDIR /app
+
+# Install Python deps (only what the worker needs)
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY app/ ./app/
+
+# Switch to non-root
+USER agent
+
+# Use tini as PID 1 for proper signal handling
+ENTRYPOINT ["tini", "--"]
+
+# Run the worker server (executes task and exits)
+CMD ["python", "-m", "app.worker_server"]

@@ -1,0 +1,69 @@
+# Network policies restricting agent pod egress.
+#
+# From the production blueprint (p.8):
+#   "Apply NetworkPolicies restricting egress to api.anthropic.com only"
+#
+# Worker pods can only:
+# - Reach api.anthropic.com (HTTPS, port 443)
+# - Reach the orchestrator service (callback, port 8000)
+# - Perform DNS lookups (UDP/TCP 53)
+
+---
+# Worker pods: restricted egress
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: worker-egress
+  namespace: agent-scheduler
+spec:
+  podSelector:
+    matchLabels:
+      app: agent-worker
+  policyTypes:
+    - Egress
+  egress:
+    # Allow DNS resolution
+    - ports:
+        - port: 53
+          protocol: UDP
+        - port: 53
+          protocol: TCP
+    # Allow HTTPS to Anthropic API
+    - ports:
+        - port: 443
+          protocol: TCP
+    # Allow callback to orchestrator
+    - to:
+        - podSelector:
+            matchLabels:
+              app: agent-orchestrator
+      ports:
+        - port: 8000
+          protocol: TCP
+
+---
+# Orchestrator: allow ingress from workers and external
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: orchestrator-ingress
+  namespace: agent-scheduler
+spec:
+  podSelector:
+    matchLabels:
+      app: agent-orchestrator
+  policyTypes:
+    - Ingress
+  ingress:
+    # Allow from worker pods (callbacks)
+    - from:
+        - podSelector:
+            matchLabels:
+              app: agent-worker
+      ports:
+        - port: 8000
+          protocol: TCP
+    # Allow external access (browser/API clients)
+    - ports:
+        - port: 8000
+          protocol: TCP

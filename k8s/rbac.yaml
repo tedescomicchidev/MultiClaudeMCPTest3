@@ -1,0 +1,52 @@
+# RBAC for the orchestrator pod to create/manage worker pods.
+#
+# The orchestrator needs permissions to:
+# - Create, get, list, watch, delete pods in its namespace
+# - Read pod logs for fallback result retrieval
+#
+# The worker pods have no RBAC permissions (automountServiceAccountToken: false).
+
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-orchestrator
+  namespace: agent-scheduler
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: agent-worker
+  namespace: agent-scheduler
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: orchestrator-pod-manager
+  namespace: agent-scheduler
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["create", "get", "list", "watch", "delete"]
+  - apiGroups: [""]
+    resources: ["pods/log"]
+    verbs: ["get"]
+  - apiGroups: [""]
+    resources: ["pods/status"]
+    verbs: ["get"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: orchestrator-pod-manager-binding
+  namespace: agent-scheduler
+subjects:
+  - kind: ServiceAccount
+    name: agent-orchestrator
+    namespace: agent-scheduler
+roleRef:
+  kind: Role
+  name: orchestrator-pod-manager
+  apiGroup: rbac.authorization.k8s.io

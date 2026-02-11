@@ -1,0 +1,17 @@
+# Service for the orchestrator — used by:
+# 1. External access (browser UI, API)
+# 2. Worker pods posting results back via callback URL
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: agent-orchestrator
+  namespace: agent-scheduler
+spec:
+  selector:
+    app: agent-orchestrator
+  ports:
+    - port: 8000
+      targetPort: 8000
+      name: http
+  type: ClusterIP

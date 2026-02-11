@@ -1,0 +1,76 @@
+# Orchestrator Deployment — the Meta-Agent that manages worker pods.
+#
+# Runs the FastAPI web app (main.py) which:
+# - Serves the frontend UI
+# - Handles swarm/team creation API requests
+# - Creates worker pods via K8s API
+# - Receives callback POSTs from worker pods
+# - Streams SSE events to connected browsers
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: agent-orchestrator
+  namespace: agent-scheduler
+  labels:
+    app: agent-orchestrator
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: agent-orchestrator
+  template:
+    metadata:
+      labels:
+        app: agent-orchestrator
+    spec:
+      serviceAccountName: agent-orchestrator
+      containers:
+        - name: orchestrator
+          image: parallel-agent-scheduler:latest
+          ports:
+            - containerPort: 8000
+              name: http
+          env:
+            - name: ANTHROPIC_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: anthropic-api-key
+                  key: api-key
+            - name: CLAUDE_MODEL
+              valueFrom:
+                configMapKeyRef:
+                  name: agent-config
+                  key: claude-model
+                  optional: true
+            - name: K8S_NAMESPACE
+              value: "agent-scheduler"
+            - name: WORKER_IMAGE
+              value: "parallel-agent-worker:latest"
+            - name: ORCHESTRATOR_SERVICE
+              value: "agent-orchestrator"
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "256Mi"
+            limits:
+              cpu: "1"
+              memory: "512Mi"
+          livenessProbe:
+            httpGet:
+              path: /api/swarms
+              port: 8000
+            initialDelaySeconds: 10
+            periodSeconds: 30
+          readinessProbe:
+            httpGet:
+              path: /api/swarms
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          securityContext:
+            runAsNonRoot: true
+            runAsUser: 1000
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]

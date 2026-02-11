@@ -1,4 +1,7 @@
-# Parallel Agent Scheduler — Production Container Image
+# Orchestrator — Production Container Image
+#
+# Runs the Meta-Agent Orchestrator which manages agent teams and swarms
+# on Kubernetes. Creates worker pods via the K8s API.
 #
 # Based on the production blueprint from "Running Claude Code in Kubernetes":
 # - Minimal base image (Alpine) to reduce attack surface
@@ -8,7 +11,7 @@
 # Build:
 #   docker build -t parallel-agent-scheduler .
 #
-# Run:
+# Run (local dev):
 #   docker run -p 8000:8000 -e ANTHROPIC_API_KEY=sk-ant-... parallel-agent-scheduler
 
 FROM python:3.12-alpine

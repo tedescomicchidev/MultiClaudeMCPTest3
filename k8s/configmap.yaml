@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: agent-config
+  namespace: agent-scheduler
+data:
+  claude-model: "claude-sonnet-4-20250514"
